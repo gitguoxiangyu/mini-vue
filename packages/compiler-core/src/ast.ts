@@ -1,5 +1,6 @@
 import { CREATE_ELEMENT_VNODE } from "./runtimeHelpers";
 
+// node类型，一共6种
 export const enum NodeTypes {
   TEXT,
   ROOT,

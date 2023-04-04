@@ -7,6 +7,7 @@ import { transformText } from "./transforms/transformText";
 
 export function baseCompile(template, options) {
   // 1. 先把 template 也就是字符串 parse 成 ast
+  // baseParse 基础语法分析
   const ast = baseParse(template);
   // 2. 给 ast 加点料（- -#）
   transform(
