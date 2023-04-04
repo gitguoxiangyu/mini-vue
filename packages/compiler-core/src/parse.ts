@@ -17,6 +17,8 @@ function createParserContext(content) {
   };
 }
 
+// 解析子元素
+// 在parseElement中会递归的调用该方法
 function parseChildren(context, ancestors) {
   console.log("开始解析 children");
   const nodes: any = [];
@@ -29,6 +31,8 @@ function parseChildren(context, ancestors) {
       // 看看如果是 {{ 开头的话，那么就是一个插值， 那么去解析他
       node = parseInterpolation(context);
     } else if (s[0] === "<") {
+      
+      // 此处用于处理结束标签
       if (s[1] === "/") {
         // 这里属于 edge case 可以不用关心
         // 处理结束标签
@@ -39,7 +43,9 @@ function parseChildren(context, ancestors) {
           // 结束标签就以为这都已经处理完了，所以就可以跳出本次循环了
           continue;
         }
-      } else if (/[a-z]/i.test(s[1])) {
+      }
+      // 此处用于处理开始标签 
+      else if (/[a-z]/i.test(s[1])) {
         node = parseElement(context, ancestors);
       }
     }
@@ -54,6 +60,8 @@ function parseChildren(context, ancestors) {
   return nodes;
 }
 
+// 作用： 用于判断context.source（上下文）的光标是否到底，到底返回true，未到底返回false
+//       
 function isEnd(context: any, ancestors) {
   // 检测标签的节点
   // 如果是结束标签的话，需要看看之前有没有开始标签，如果有的话，那么也应该结束
@@ -74,13 +82,16 @@ function isEnd(context: any, ancestors) {
   return !context.source;
 }
 
+// 解析Element  参数： context 上下文（模板） ancestor 祖先元素数组
 function parseElement(context, ancestors) {
   // 应该如何解析 tag 呢
-  // <div></div>
-  // 先解析开始 tag
+  // <div></div> 
+  // 先解析开始 tag的头部
+  // element: {tag, type, tagtype}
   const element = parseTag(context, TagType.Start);
 
   ancestors.push(element);
+  // 递归解析子元素
   const children = parseChildren(context, ancestors);
   ancestors.pop();
 
@@ -106,19 +117,27 @@ function startsWithEndTagOpen(source: string, tag: string) {
   );
 }
 
+// 解析标签  参数： context 上下文 type 
+// 作用： 如果传入的type为start，则解析标签，返回对象{tag, type, tagtype,}
+//       如果传入的type是end，则返回null
+//       并把上下文的光标向后移动
 function parseTag(context: any, type: TagType): any {
   // 发现如果不是 > 的话，那么就把字符都收集起来 ->div
   // 正则
+  // 匹配字母
   const match: any = /^<\/?([a-z][^\r\n\t\f />]*)/i.exec(context.source);
   const tag = match[1];
 
   // 移动光标
   // <div
+  // 将光标移动到标签名后一个
   advanceBy(context, match[0].length);
 
   // 暂时不处理 selfClose 标签的情况 ，所以可以直接 advanceBy 1个坐标 <  的下一个就是 >
   advanceBy(context, 1);
 
+  // 如果type传入的是End，则直接return null
+  // 这条代码不提前的原因：需要将上下文（模板）光标向后移动
   if (type === TagType.End) return;
 
   let tagType = ElementTypes.ELEMENT;
@@ -168,6 +187,7 @@ function parseInterpolation(context: any) {
   };
 }
 
+// 解析文本
 function parseText(context): any {
   console.log("解析 text", context);
 
@@ -208,6 +228,7 @@ function parseTextData(context: any, length: number): any {
   return rawText;
 }
 
+// 用于将上下文的光标向后移动 
 function advanceBy(context, numberOfCharacters) {
   console.log("推进代码", context, numberOfCharacters);
   context.source = context.source.slice(numberOfCharacters);
