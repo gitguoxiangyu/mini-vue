@@ -1,6 +1,7 @@
 import { CREATE_ELEMENT_VNODE } from "./runtimeHelpers";
 
 // node类型，一共6种
+// text , root , interpolation , simple_expression , element , compound_expression
 export const enum NodeTypes {
   TEXT,
   ROOT,
@@ -14,6 +15,7 @@ export const enum ElementTypes {
   ELEMENT,
 }
 
+// 创建一个simple_expression类型
 export function createSimpleExpression(content) {
   return {
     type: NodeTypes.SIMPLE_EXPRESSION,
@@ -21,6 +23,7 @@ export function createSimpleExpression(content) {
   };
 }
 
+// 创建一个interpolation类型
 export function createInterpolation(content) {
   return {
     type: NodeTypes.INTERPOLATION,
@@ -28,6 +31,7 @@ export function createInterpolation(content) {
   };
 }
 
+// 创建一个vnode（虚拟dom）
 export function createVNodeCall(context, tag, props?, children?) {
   if (context) {
     context.helper(CREATE_ELEMENT_VNODE);

@@ -5,11 +5,13 @@ const enum TagType {
   End,
 }
 
+// 基础语法分析   compile.ts中调用 ， 传入整个template（模板）
 export function baseParse(content: string) {
   const context = createParserContext(content);
   return createRoot(parseChildren(context, []));
 }
 
+// 创建语法上下文   
 function createParserContext(content) {
   console.log("创建 paserContext");
   return {
@@ -30,8 +32,9 @@ function parseChildren(context, ancestors) {
     if (startsWith(s, "{{")) {
       // 看看如果是 {{ 开头的话，那么就是一个插值， 那么去解析他
       node = parseInterpolation(context);
-    } else if (s[0] === "<") {
-      
+    } 
+    // 如果以<开头，则可能为标签
+    else if (s[0] === "<") {    
       // 此处用于处理结束标签
       if (s[1] === "/") {
         // 这里属于 edge case 可以不用关心
@@ -68,6 +71,8 @@ function isEnd(context: any, ancestors) {
   // 这里的一个 edge case 是 <div><span></div>
   // 像这种情况下，其实就应该报错
   const s = context.source;
+
+  // string.startsWith(str), 检查字符串string是否以str开头
   if (context.source.startsWith("</")) {
     // 从后面往前面查
     // 因为便签如果存在的话 应该是 ancestors 最后一个元素
